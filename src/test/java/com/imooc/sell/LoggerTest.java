@@ -18,7 +18,7 @@ public class LoggerTest {
      *     DEBUG(10, "DEBUG"),
      *     TRACE(0, "TRACE");
      *
-     *  系统默认级别为info, 只会输出info之上
+     *  系统默认级别为info, 只会输出info之上 2020年2月21日04:42:34
      */
     @Test
     public void testLog(){
