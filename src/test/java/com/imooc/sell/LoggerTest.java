@@ -23,6 +23,7 @@ public class LoggerTest {
     @Test
     public void testLog(){
       log.debug("log debug..."); // 不输出
+         log.debug("12212121");
       log.info("log info...");
       log.error("log error...");
     }

@@ -8,3 +8,12 @@ spring:
     show-sql: true
 server:
   context-path: /sell
+
+logging:
+  pattern:
+    console: "%d : %msg%n"
+  file: C:\sell-project-log\sell.log
+  #  path: C:\sell-project-log
+  level:
+    com.imooc.LoggerTest: debug
+
