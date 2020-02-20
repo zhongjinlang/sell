@@ -3,17 +3,17 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver
     username: root
     password: 123456
-    url: jdbc:mysql://192.168.0.101/sell?characterEncoding=utf-8&useSSL=false
+    url: jdbc:mysql://192.168.56.101/sell?characterEncoding=utf-8&useSSL=false
   jpa:
     show-sql: true
 server:
   context-path: /sell
 
-logging:
-  pattern:
-    console: "%d : %msg%n"
-  file: C:\sell-project-log\sell.log
-  #  path: C:\sell-project-log
-  level:
-    com.imooc.LoggerTest: debug
+#logging:
+#  pattern:
+#    console: "%d : %msg%n"
+#  file: C:\sell-project-log\sell.log
+#  #  path: C:\sell-project-log
+#  level:
+#    com.imooc.LoggerTest: debug  # 好像没效果..一样不输出debug
 
