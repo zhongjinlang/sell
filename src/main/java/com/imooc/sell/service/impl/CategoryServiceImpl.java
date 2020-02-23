@@ -1,6 +1,5 @@
 package com.imooc.sell.service.impl;
 
-import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.imooc.sell.dataobject.ProductCategory;
 import com.imooc.sell.repository.ProductCategoryRepository;
 import com.imooc.sell.service.CategoryService;
