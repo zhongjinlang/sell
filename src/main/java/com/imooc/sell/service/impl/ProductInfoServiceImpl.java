@@ -56,7 +56,15 @@ public class ProductInfoServiceImpl implements ProductInfoService {
     }
 
     @Override
+    @Transactional
     public void increase(List<CartDto> cartDtoList) {
-
+        for (CartDto cartDto : cartDtoList) {
+            // 根据商品id查询商品
+            ProductInfo productInfo = repositorye.findOne(cartDto.getProductId());
+            if (productInfo == null) throw new SellException(ResultEnum.PRODUCT_INFO_NO_EXIST);
+            Integer stock = productInfo.getProductStock() + cartDto.getProductQuantity();
+            productInfo.setProductStock(stock);
+            repositorye.save(productInfo);
+        }
     }
 }

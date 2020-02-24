@@ -15,6 +15,7 @@ import com.imooc.sell.repository.ProductInfoRepository;
 import com.imooc.sell.service.OrderService;
 import com.imooc.sell.service.ProductInfoService;
 import com.imooc.sell.utils.KeyUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.criterion.Order;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
@@ -122,9 +125,42 @@ public class OrderServiceImpl implements OrderService {
         return orderDto;
     }
 
+    /**
+     * 取消订单
+     * @param orderDto 前台会传入 openid和orderId
+     * @return
+     */
     @Override
+    @Transactional
     public OrderDto cancel(OrderDto orderDto) {
-        return null;
+        // 查询订单状态是否正确
+        OrderMaster orderMaster = orderMasterRepository.findOne(orderDto.getOrderId());
+        if (!orderMaster.getOrderStatus().equals(OrderStatusEnum.NEW.getCode())){
+            log.error("【取消订单】订单状态不正确 orderId={}, status={}", orderMaster.getOrderId(), orderMaster.getOrderStatus());
+            throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
+        }
+
+        // 修改状态
+        orderMaster.setOrderStatus(OrderStatusEnum.CANCEL.getCode());
+        OrderMaster update = orderMasterRepository.save(orderMaster);
+        if (update == null){
+            log.error("【取消订单】订单状态更新失败, {}", update);
+        }
+
+        // 返回库存
+        if (orderDto.getOrderDetailList() != null){
+            List<CartDto> cartDtoList = new ArrayList<>();
+            for (OrderDetail orderDetail : orderDto.getOrderDetailList()) {
+                CartDto cartDto = new CartDto(orderDetail.getProductId(), orderDetail.getProductQuantity());
+                cartDtoList.add(cartDto);
+            }
+            productInfoService.increase(cartDtoList);
+        }
+
+        if (orderMaster.getPayStatus().equals(PayStatusEnum.SUCCESS.getCode())){
+            // TODO 如果已支付，退款
+        }
+        return orderDto;
     }
 
     @Override

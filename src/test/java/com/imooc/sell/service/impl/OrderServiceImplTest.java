@@ -70,6 +70,8 @@ public class OrderServiceImplTest {
 
     @Test
     public void cancel() {
+        OrderDto orderDto = orderService.findOne("1582554052211213388");
+        orderService.cancel(orderDto);
     }
 
     @Test
