@@ -19,11 +19,14 @@ import org.hibernate.criterion.Order;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,14 +42,44 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderMasterRepository orderMasterRepository;
 
+    /**
+     * 查询订单详情, 订单主表以及订单详情列表
+     * @param orderId
+     * @return
+     */
     @Override
     public OrderDto findOne(String orderId) {
-        return null;
+        OrderMaster orderMaster = orderMasterRepository.findOne(orderId);
+        if (orderMaster == null) throw new SellException(ResultEnum.ORDER_NOT_EXIST);
+
+        List<OrderDetail> orderDetailList = orderDetailRepository.findByOrderId(orderId);
+        if (CollectionUtils.isEmpty(orderDetailList)) throw new SellException(ResultEnum.ORDER_DETAIL_NOT_EXIST);
+
+        OrderDto orderDto = new OrderDto();
+        BeanUtils.copyProperties(orderMaster, orderDto);
+        orderDto.setOrderDetailList(orderDetailList);
+        return orderDto;
     }
 
+    /**
+     * 订单列表, 不需要订单详情数据
+     * @param openid
+     * @param pageable
+     * @return
+     */
     @Override
     public Page<OrderDto> findList(String openid, Pageable pageable) {
-        return null;
+        Page<OrderMaster> OrderMasterPage = orderMasterRepository.findByBuyerOpenid(openid, pageable);
+        List<OrderMaster> orderMasterList = OrderMasterPage.getContent();
+        // 将orderMaster转换为orderDto
+        List<OrderDto> orderDtoList = new ArrayList<>();
+        for (OrderMaster orderMaster : orderMasterList) {
+            OrderDto orderDto = new OrderDto();
+            BeanUtils.copyProperties(orderMaster,orderDto);
+            orderDtoList.add(orderDto);
+        }
+        Page<OrderDto> orderDtoPage = new PageImpl<>(orderDtoList, pageable, OrderMasterPage.getTotalElements());
+        return orderDtoPage;
     }
 
     /**
