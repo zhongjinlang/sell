@@ -92,6 +92,7 @@ public class OrderServiceImpl implements OrderService {
      * @return
      */
     @Override
+    @Transactional
     public OrderDto create(OrderDto orderDto) {
         String orderId = KeyUtils.genUniqueKey();
         BigDecimal total = new BigDecimal(BigInteger.ZERO);
@@ -145,6 +146,7 @@ public class OrderServiceImpl implements OrderService {
         OrderMaster update = orderMasterRepository.save(orderMaster);
         if (update == null){
             log.error("【取消订单】订单状态更新失败, {}", update);
+            throw new SellException(ResultEnum.ORDER_STATUS_UPDATE_ERROR);
         }
 
         // 返回库存
@@ -163,13 +165,56 @@ public class OrderServiceImpl implements OrderService {
         return orderDto;
     }
 
+    /**
+     * 完结订单
+     * @param orderDto
+     * @return
+     */
     @Override
+    @Transactional
     public OrderDto finish(OrderDto orderDto) {
-        return null;
+        // 查询订单状态是否正确
+        OrderMaster orderMaster = orderMasterRepository.findOne(orderDto.getOrderId());
+        if (!orderMaster.getOrderStatus().equals(OrderStatusEnum.NEW.getCode())){
+            log.error("【完结订单】订单状态不正确 orderId={}, status={}", orderMaster.getOrderId(), orderMaster.getOrderStatus());
+            throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
+        }
+        // 修改状态
+        orderMaster.setOrderStatus(OrderStatusEnum.FINISHED.getCode());
+        OrderMaster update = orderMasterRepository.save(orderMaster);
+        if (update == null){
+            log.error("【完结订单】订单状态更新失败, {}", update);
+            throw new SellException(ResultEnum.ORDER_STATUS_UPDATE_ERROR);
+        }
+        return orderDto;
     }
 
+    /**
+     * 支付订单
+     * @param orderDto
+     * @return
+     */
     @Override
-    public OrderDto paid(Order order) {
-        return null;
+    @Transactional
+    public OrderDto paid(OrderDto orderDto) {
+        // 查询订单状态是否正确
+        OrderMaster orderMaster = orderMasterRepository.findOne(orderDto.getOrderId());
+        if (!orderMaster.getOrderStatus().equals(OrderStatusEnum.NEW.getCode())){
+            log.error("【支付订单】订单状态不正确 orderId={}, status={}", orderMaster.getOrderId(), orderMaster.getOrderStatus());
+            throw new SellException(ResultEnum.ORDER_STATUS_ERROR);
+        }
+        // 修改支付状态
+        if (!orderMaster.getPayStatus().equals(PayStatusEnum.WAIT.getCode())){
+            log.error("【支付订单】支付订单状态不正确 orderId={}, status={}", orderMaster.getOrderId(), orderMaster.getPayStatus());
+            throw new SellException(ResultEnum.ORDER_PAY_STATUS_ERROR);
+        }
+
+        orderMaster.setPayStatus(PayStatusEnum.SUCCESS.getCode());
+        OrderMaster update = orderMasterRepository.save(orderMaster);
+        if (update == null){
+            log.error("【支付订单】订单状态更新失败, {}", update);
+            throw new SellException(ResultEnum.ORDER_PAY_STATUS_ERROR);
+        }
+        return orderDto;
     }
 }

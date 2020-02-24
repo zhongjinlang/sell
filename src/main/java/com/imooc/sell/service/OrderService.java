@@ -35,6 +35,6 @@ public interface OrderService {
     /**
      * 支付订单
      */
-    OrderDto paid(Order order);
+    OrderDto paid(OrderDto orderDto);
 
 }
