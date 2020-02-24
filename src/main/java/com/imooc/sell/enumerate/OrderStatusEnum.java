@@ -2,8 +2,6 @@ package com.imooc.sell.enumerate;
 
 import lombok.Getter;
 
-import javax.annotation.Generated;
-
 /**
  * 订单状态
  */

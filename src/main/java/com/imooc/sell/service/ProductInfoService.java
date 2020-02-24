@@ -1,6 +1,8 @@
 package com.imooc.sell.service;
 
 import com.imooc.sell.dataobject.ProductInfo;
+import com.imooc.sell.dto.CartDto;
+import org.hibernate.type.descriptor.java.CharacterArrayTypeDescriptor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -18,4 +20,12 @@ public interface ProductInfoService {
     List<ProductInfo> findProductUp();
 
     ProductInfo save(ProductInfo productInfo);
+
+    /**
+     * 减少库存
+     * @param cartDtoList 购物车集合
+     */
+    void decrease(List<CartDto> cartDtoList);
+
+    void increase(List<CartDto> cartDtoList);
 }
